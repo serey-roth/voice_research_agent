@@ -12,15 +12,19 @@
         "eval": "node --experimental-strip-types src/app/eval.mts"
     },
     "dependencies": {
+        "@clerk/nextjs": "^7.5.3",
         "@elevenlabs/elevenlabs-js": "^2.52.0",
         "@elevenlabs/react": "^1.6.7",
         "@linear/sdk": "^86.0.0",
         "@notionhq/client": "^5.22.0",
         "@upstash/redis": "^1.38.0",
         "dotenv": "^17.4.2",
+        "lucide-react": "^1.20.0",
         "next": "16.2.9",
+        "orb-ui": "^0.2.4",
         "react": "19.2.4",
-        "react-dom": "19.2.4"
+        "react-dom": "19.2.4",
+        "svix": "^1.95.2"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4",
