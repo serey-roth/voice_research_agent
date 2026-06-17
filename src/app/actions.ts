@@ -130,13 +130,16 @@ async function getOrCreateLinearProject(
     linear: LinearClient,
     productName: string,
     teamId: string
-): Promise<string> {
+): Promise<{ id: string; url: string }> {
     const existing = await linear.projects({ filter: { name: { eq: productName } } })
-    if (existing.nodes.length > 0) return existing.nodes[0].id
+    if (existing.nodes.length > 0) {
+        const p = existing.nodes[0]
+        return { id: p.id, url: p.url }
+    }
     const payload = await linear.createProject({ name: productName, teamIds: [teamId] })
     const project = await payload.project
     if (!project) throw new Error('Failed to create Linear project')
-    return project.id
+    return { id: project.id, url: project.url }
 }
 
 export async function createIssues(
@@ -162,7 +165,7 @@ export async function createIssues(
         const participantEmail = session?.participantEmail
         const { client: linear, teamId } = linearCtx
         const createdAt = date ? new Date(date) : undefined
-        const projectId = await getOrCreateLinearProject(linear, product_name, teamId)
+        const { id: projectId, url } = await getOrCreateLinearProject(linear, product_name, teamId)
 
         await Promise.all(
             pain_points.map((point) =>
@@ -182,8 +185,6 @@ export async function createIssues(
             )
         )
 
-        const team = await linear.team(teamId)
-        const url = `https://linear.app/team/${team.key}/projects/${projectId}`
         return { count: pain_points.length, url, status: 'success' }
     } catch (err) {
         console.error('linear error:', err)

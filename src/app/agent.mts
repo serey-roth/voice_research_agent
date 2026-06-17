@@ -26,6 +26,8 @@ const tools: ElevenLabs.PromptAgentApiModelOutputToolsItem[] = [
             type: 'object',
             required: [
                 'product_name',
+                'product_description',
+                'research_goal',
                 'participant_email',
                 'date',
                 'key_findings',
@@ -37,6 +39,14 @@ const tools: ElevenLabs.PromptAgentApiModelOutputToolsItem[] = [
                 product_name: {
                     type: 'string',
                     description: 'The name of the product being researched.',
+                },
+                product_description: {
+                    type: 'string',
+                    description: 'The product description, from {{product_description}}.',
+                },
+                research_goal: {
+                    type: 'string',
+                    description: 'The research goal, from {{research_goal}}.',
                 },
                 participant_email: {
                     type: 'string',

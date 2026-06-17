@@ -47,6 +47,8 @@ export const prompt = `
     ## \`create_brief\`
     Saves a structured research brief to Notion. The page is titled by product, participant, and date.
     - \`product_name\`: From {{product_name}}.
+    - \`product_description\`: From {{product_description}}.
+    - \`research_goal\`: From {{research_goal}}.
     - \`participant_email\`: From {{participant_email}}.
     - \`date\`: From {{current_date}}.
     - \`key_findings\`: The most important insights. 3–5 complete sentences.
