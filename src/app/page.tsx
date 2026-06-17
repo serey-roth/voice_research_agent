@@ -7,15 +7,22 @@ const redis = Redis.fromEnv()
 
 interface Project {
     productName: string
+    productDescription: string
     researchGoal: string
+    seedQuestions: string[]
     createdAt: string
+    updatedAt: string
+    deletedAt: string | null
 }
 
 interface Session {
     participantEmail: string
-    status: 'pending' | 'completed'
+    status: 'pending' | 'active' | 'completed' | 'failed'
     notionUrl: string | null
-    ticketsUrl: string | null
+    issuesUrl: string | null
+    notionStatus: 'success' | 'failed' | null
+    issuesStatus: 'success' | 'failed' | null
+    deletedAt?: string | null
 }
 
 export const revalidate = 0
@@ -37,7 +44,7 @@ export default async function HomePage() {
         ? await Promise.all(
               projectIds.map(async (projectId) => {
                   const project = await redis.get<Project>(`project:${projectId}`)
-                  if (!project) return null
+                  if (!project || project.deletedAt) return null
 
                   const sessionIds = await redis.lrange<string>(
                       `sessions:project:${projectId}`,
@@ -49,7 +56,7 @@ export default async function HomePage() {
                             await Promise.all(
                                 sessionIds.map(async (id) => {
                                     const s = await redis.get<Session>(`session:${id}`)
-                                    return s ? { id, ...s } : null
+                                    return s && !s.deletedAt ? { id, ...s } : null
                                 })
                             )
                         ).filter(Boolean) as ({ id: string } & Session)[])
@@ -58,7 +65,9 @@ export default async function HomePage() {
                   return {
                       id: projectId,
                       productName: project.productName,
+                      productDescription: project.productDescription,
                       researchGoal: project.researchGoal,
+                      seedQuestions: project.seedQuestions,
                       createdAt: project.createdAt,
                       sessions,
                   }

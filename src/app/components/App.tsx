@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
-import { FolderOpen, Plug, BarChart2 } from 'lucide-react'
+import { FolderOpen, Plug, BarChart2, Menu } from 'lucide-react'
 
 interface Props {
     header: React.ReactNode
@@ -86,14 +86,7 @@ export default function App({ header, children }: Props) {
                         className="lg:hidden text-muted hover:text-ink transition-colors p-1 -ml-1 outline-none"
                         aria-label="Open menu"
                     >
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <path
-                                d="M2 4.5h14M2 9h14M2 13.5h14"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                            />
-                        </svg>
+                        <Menu size={18} />
                     </button>
 
                     {header}
