@@ -4,8 +4,8 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import App from '@/app/components/App'
 import { disconnectNotion, disconnectLinear } from '@/app/actions'
-import { NotionDatabaseSelector } from '@/app/onboarding/NotionDatabaseSelector'
-import { LinearTeamSelector } from '@/app/onboarding/LinearTeamSelector'
+import { NotionDatabaseSelector } from '@/app/components/NotionDatabaseSelector'
+import { LinearTeamSelector } from '@/app/components/LinearTeamSelector'
 
 interface Props {
     notionConnected: boolean

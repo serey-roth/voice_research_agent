@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { NotionDatabaseSelector } from './NotionDatabaseSelector'
-import { LinearTeamSelector } from './LinearTeamSelector'
+import { NotionDatabaseSelector } from '../components/NotionDatabaseSelector'
+import { LinearTeamSelector } from '../components/LinearTeamSelector'
 
 interface Database {
     id: string
