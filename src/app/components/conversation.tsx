@@ -2,7 +2,6 @@
 
 import { useConversation } from '@elevenlabs/react'
 import { useEffect, useRef, useState } from 'react'
-import { Check } from 'lucide-react'
 import { Orb } from 'orb-ui'
 import type { OrbState } from 'orb-ui'
 import {
@@ -152,65 +151,69 @@ export function Conversation({ session, sessionId }: { session: Session; session
 
     if (hasEnded) {
         return (
-            <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-                <div className="w-8 h-8 rounded-full bg-surface border border-neutral-200 flex items-center justify-center mb-1">
-                    <Check size={14} />
-                </div>
-                <p className="text-sm font-medium text-ink">Thanks for your time.</p>
+            <div className="flex flex-col items-center gap-4 text-center max-w-xs">
+                <p className="text-lg font-semibold text-ink tracking-tight">
+                    Thanks for your time.
+                </p>
                 <p className="text-[13px] text-muted leading-relaxed">
-                    Your responses have been recorded.
+                    Your feedback on {session.productName} has been recorded.
                 </p>
             </div>
         )
     }
 
     return (
-        <div className="flex flex-col items-center gap-10 text-center">
-            {!isActive && (
-                <div className="flex flex-col items-center gap-2">
-                    <h1 className="text-xl font-semibold text-ink tracking-tight">
-                        You&rsquo;re all set
-                    </h1>
-                    <p className="text-sm text-muted max-w-xs">
-                        Speak naturally and take your time. There are no right or wrong answers.
-                    </p>
-                </div>
-            )}
-
-            <div className="flex flex-col items-center gap-5">
-                <Orb
-                    state={orbState}
-                    theme="circle"
-                    size={120}
-                    onStart={startConversation}
-                    onStop={stopConversation}
-                    aria-label={isActive ? 'End interview' : 'Start interview'}
-                />
-
-                {isActive && (
-                    <p className="text-[13px] text-muted">
-                        {isConnecting ? 'Getting ready…' : isSpeaking ? 'Speaking' : 'Listening'}
-                    </p>
-                )}
-
-                {!isActive && !sessionError && !connectTimedOut && (
-                    <p className="text-[12px] text-muted">Click to start</p>
-                )}
+        <div className="flex flex-col items-center gap-12 text-center w-full max-w-xs">
+            {/* Product context — fades out when active */}
+            <div
+                className={`flex flex-col gap-1.5 transition-opacity duration-300 ${isActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            >
+                <p className="text-xs text-muted uppercase tracking-widest font-medium">
+                    Voice Interview
+                </p>
+                <p className="text-2xl font-semibold text-ink tracking-tight leading-snug">
+                    {session.productName}
+                </p>
+                <p className="text-[13px] text-muted leading-relaxed mt-1 max-w-[220px] mx-auto">
+                    Share your honest thoughts — this is a short voice conversation.
+                </p>
             </div>
 
-            {micError && (
-                <p className="text-sm text-red-600 max-w-xs">
-                    Microphone access was denied. Please allow mic access in your browser settings
-                    and try again.
-                </p>
-            )}
+            {/* Orb */}
+            <div className="flex flex-col items-center gap-5">
+                <div className="relative">
+                    <Orb
+                        state={orbState}
+                        theme="circle"
+                        size={152}
+                        onStart={startConversation}
+                        onStop={stopConversation}
+                        aria-label={isActive ? 'End interview' : 'Start interview'}
+                    />
+                </div>
 
-            {(sessionError || connectTimedOut) && (
-                <p className="text-sm text-red-600 max-w-xs">
-                    Something went wrong connecting to the interview. Please refresh the page and
-                    try again.
-                </p>
-            )}
+                <div className="h-4 flex items-center justify-center">
+                    <p className="text-[13px] text-muted">
+                        {isActive
+                            ? isConnecting
+                                ? 'Getting ready…'
+                                : isSpeaking
+                                  ? 'Speaking'
+                                  : 'Listening'
+                            : sessionError || connectTimedOut || micError
+                              ? null
+                              : 'Tap to begin'}
+                    </p>
+                </div>
+
+                {(micError || sessionError || connectTimedOut) && (
+                    <p className="text-[13px] text-red-500 max-w-[240px] leading-relaxed">
+                        {micError
+                            ? 'Microphone access was denied. Allow mic access in your browser settings and try again.'
+                            : 'Something went wrong. Please refresh the page and try again.'}
+                    </p>
+                )}
+            </div>
         </div>
     )
 }

@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis'
-import { AlertCircle, Check } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { Interview } from './Interview'
 
 const redis = Redis.fromEnv()
@@ -51,9 +51,6 @@ export default async function InterviewPage({
             return (
                 <main className="min-h-screen flex flex-col items-center justify-center px-6">
                     <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-                        <div className="w-8 h-8 rounded-full border border-neutral-200 flex items-center justify-center mb-1">
-                            <AlertCircle size={14} className="text-muted" />
-                        </div>
                         <p className="text-sm font-medium text-ink">Session unavailable</p>
                         <p className="text-[13px] text-muted leading-relaxed">
                             This interview session is currently unavailable. Please contact the
@@ -67,15 +64,17 @@ export default async function InterviewPage({
 
     if (session.status === 'completed') {
         return (
-            <main className="min-h-screen flex flex-col items-center justify-center px-6">
-                <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-                    <div className="w-8 h-8 rounded-full bg-surface border border-neutral-200 flex items-center justify-center mb-1">
-                        <Check size={14} />
+            <main className="min-h-screen flex flex-col bg-bg">
+                <header className="px-6 py-5">
+                    <p className="text-[13px] font-medium text-muted tracking-wide">VoiceScope</p>
+                </header>
+                <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
+                    <div className="flex flex-col items-center gap-4 text-center max-w-sm">
+                        <p className="text-lg font-semibold text-ink tracking-tight">Thanks for your time.</p>
+                        <p className="text-[13px] text-muted leading-relaxed">
+                            Your responses have been recorded.
+                        </p>
                     </div>
-                    <p className="text-sm font-medium text-ink">Interview complete</p>
-                    <p className="text-[13px] text-muted leading-relaxed">
-                        Thanks for your time. Your responses have been recorded.
-                    </p>
                 </div>
             </main>
         )
@@ -96,13 +95,11 @@ export default async function InterviewPage({
     }
 
     return (
-        <main className="min-h-screen flex flex-col">
-            <header className="border-b border-neutral-100 px-6 py-4">
-                <p className="text-[13px] text-muted">
-                    Research interview &mdash; {project.productName}
-                </p>
+        <main className="min-h-screen flex flex-col bg-bg">
+            <header className="px-6 py-5">
+                <p className="text-[13px] font-medium text-muted tracking-wide">VoiceScope</p>
             </header>
-            <div className="flex flex-1 flex-col items-center justify-center py-16 px-6">
+            <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
                 <Interview
                     session={{
                         productName: project.productName,
