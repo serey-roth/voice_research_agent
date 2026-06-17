@@ -265,6 +265,52 @@ export async function resetSession(sessionId: string): Promise<void> {
     await redis.set(`session:${sessionId}`, { ...session, status: 'pending', error: null })
 }
 
+export async function selectNotionDatabase(databaseId: string): Promise<void> {
+    const { userId } = await auth()
+    if (!userId) throw new Error('Unauthorized')
+    await redis.set(`user:${userId}:notion_database_id`, databaseId)
+}
+
+export async function createNotionDatabase(): Promise<{ id: string }> {
+    const { userId } = await auth()
+    if (!userId) throw new Error('Unauthorized')
+
+    const [token, templatePageId] = await Promise.all([
+        redis.get<string>(`user:${userId}:notion_token`),
+        redis.get<string>(`user:${userId}:notion_template_page_id`),
+    ])
+    if (!token) throw new Error('Notion not connected')
+
+    const notion = new Client({ auth: token })
+    const parent = templatePageId
+        ? { type: 'page_id' as const, page_id: templatePageId }
+        : { type: 'workspace' as const, workspace: true as const }
+
+    const db = await notion.databases.create({
+        parent,
+        title: [{ type: 'text', text: { content: 'VoiceScope Research Briefs' } }],
+        initial_data_source: {
+            properties: {
+                'Brief Title': { title: {} },
+                'Product Name': { rich_text: {} },
+                'Product Description': { rich_text: {} },
+                'Research Goal': { rich_text: {} },
+                'Participant Email': { email: {} },
+                'Interview Date': { date: {} },
+            },
+        }
+    })
+
+    await redis.set(`user:${userId}:notion_database_id`, db.id)
+    return { id: db.id }
+}
+
+export async function selectLinearTeam(teamId: string): Promise<void> {
+    const { userId } = await auth()
+    if (!userId) throw new Error('Unauthorized')
+    await redis.set(`user:${userId}:linear_team_id`, teamId)
+}
+
 export async function disconnectNotion() {
     const { userId } = await auth()
     if (!userId) return
@@ -272,6 +318,7 @@ export async function disconnectNotion() {
     await Promise.all([
         redis.del(`user:${userId}:notion_token`),
         redis.del(`user:${userId}:notion_database_id`),
+        redis.del(`user:${userId}:notion_template_page_id`),
     ])
 }
 
@@ -474,4 +521,32 @@ export async function deleteProject(projectId: string): Promise<void> {
         redis.set(`project:${projectId}`, { ...project, deletedAt: now, updatedAt: now }),
         ...sessions.map((s) => redis.set(`session:${s.id}`, { ...s.data, deletedAt: now })),
     ])
+}
+
+export async function fetchNotionDatabases(token: string): Promise<{ id: string; name: string }[]> {
+    try {
+        const notion = new Client({ auth: token })
+        const search = await notion.search({ filter: { value: 'data_source', property: 'object' } })
+        type DataSourceResult = { id: string; parent?: { type: string; database_id?: string }; title?: { plain_text: string }[] }
+        return search.results.map((r) => {
+            const src = r as unknown as DataSourceResult
+            const id = src.parent?.type === 'database_id' && src.parent.database_id
+                ? src.parent.database_id
+                : src.id
+            const name = src.title?.[0]?.plain_text ?? 'Untitled'
+            return { id, name }
+        })
+    } catch {
+        return []
+    }
+}
+
+export async function fetchLinearTeams(token: string): Promise<{ id: string; name: string }[]> {
+    try {
+        const linear = new LinearClient({ accessToken: token })
+        const { nodes } = await linear.teams()
+        return nodes.map((t) => ({ id: t.id, name: t.name }))
+    } catch {
+        return []
+    }
 }

@@ -2,6 +2,8 @@ import { auth } from '@clerk/nextjs/server'
 import { Redis } from '@upstash/redis'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { fetchNotionDatabases, fetchLinearTeams } from '@/app/actions'
+import { OnboardingLinearTeamSelector, OnboardingNotionDatabaseSelector } from './OnboardingSelectors'
 
 const redis = Redis.fromEnv()
 
@@ -11,15 +13,20 @@ export default async function OnboardingPage() {
     const { userId } = await auth()
     if (!userId) redirect('/sign-in')
 
-    const [notionToken, linearToken] = await Promise.all([
-        redis.get(`user:${userId}:notion_token`),
-        redis.get(`user:${userId}:linear_token`),
+    const [notionToken, notionDatabaseId, linearToken, linearTeamId] = await Promise.all([
+        redis.get<string>(`user:${userId}:notion_token`),
+        redis.get<string>(`user:${userId}:notion_database_id`),
+        redis.get<string>(`user:${userId}:linear_token`),
+        redis.get<string>(`user:${userId}:linear_team_id`),
     ])
 
-    const notionConnected = !!notionToken
+    const notionConnected = !!notionToken && !!notionDatabaseId
+    const pendingNotionDbSelection = !!notionToken && !notionDatabaseId
     const linearConnected = !!linearToken
+    const pendingLinearTeamSelection = linearConnected && !linearTeamId
 
-    if (notionConnected) redirect('/')
+    const notionDatabases = pendingNotionDbSelection ? await fetchNotionDatabases(notionToken!) : []
+    const linearTeams = linearToken ? await fetchLinearTeams(linearToken) : []
 
     return (
         <main className="min-h-screen flex flex-col items-center justify-center px-6">
@@ -49,7 +56,7 @@ export default async function OnboardingPage() {
                                 </span>
                             )}
                         </div>
-                        {!notionConnected && (
+                        {!notionToken && (
                             <div className="flex items-center gap-3">
                                 <a
                                     href="/api/auth/notion"
@@ -65,6 +72,12 @@ export default async function OnboardingPage() {
                                 >
                                     Don&apos;t have Notion?
                                 </a>
+                            </div>
+                        )}
+                        {pendingNotionDbSelection && (
+                            <div className="flex flex-col gap-2">
+                                <p className="text-[13px] text-muted">Select a database for briefs:</p>
+                                <OnboardingNotionDatabaseSelector databases={notionDatabases} />
                             </div>
                         )}
                     </div>
@@ -83,7 +96,7 @@ export default async function OnboardingPage() {
                                     automatically created as issues in your Linear workspace.
                                 </p>
                             </div>
-                            {linearConnected && (
+                            {linearConnected && !pendingLinearTeamSelection && (
                                 <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-surface text-muted">
                                     Connected
                                 </span>
@@ -107,17 +120,27 @@ export default async function OnboardingPage() {
                                 </a>
                             </div>
                         )}
+                        {pendingLinearTeamSelection && (
+                            <div className="flex flex-col gap-2">
+                                <p className="text-[13px] text-muted">Select a team for issues:</p>
+                                <OnboardingLinearTeamSelector teams={linearTeams} />
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 <div className="mt-8">
-                    {notionConnected ? (
+                    {notionConnected && !pendingLinearTeamSelection ? (
                         <Link
                             href="/"
                             className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-[6px] transition-colors inline-block"
                         >
                             Continue
                         </Link>
+                    ) : pendingNotionDbSelection ? (
+                        <p className="text-[13px] text-muted">Select a Notion database to continue.</p>
+                    ) : pendingLinearTeamSelection ? (
+                        <p className="text-[13px] text-muted">Select a Linear team to continue.</p>
                     ) : (
                         <p className="text-[13px] text-muted">Connect Notion to continue.</p>
                     )}

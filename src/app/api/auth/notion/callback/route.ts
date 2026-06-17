@@ -1,6 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
 import { Redis } from '@upstash/redis'
-import { Client } from '@notionhq/client'
 import { redirect } from 'next/navigation'
 
 const redis = Redis.fromEnv()
@@ -39,36 +38,14 @@ export async function GET(request: Request) {
     const data = await res.json()
     const accessToken = data.access_token as string
 
-    const notion = new Client({ auth: accessToken })
-    let databaseId: string
-
-    try {
-        const parent = data.duplicated_template_id
-            ? { type: 'page_id' as const, page_id: data.duplicated_template_id as string }
-            : { type: 'workspace' as const, workspace: true as const }
-
-        const db = await notion.databases.create({
-            parent,
-            title: [{ type: 'text', text: { content: 'VoiceScope Research Briefs' } }],
-            initial_data_source: {
-                properties: {
-                    'Brief Title': { title: {} },
-                    'Product Name': { rich_text: {} },
-                    'Product Description': { rich_text: {} },
-                    'Research Goal': { rich_text: {} },
-                    'Participant Email': { email: {} },
-                    'Interview Date': { date: {} },
-                },
-            },
-        })
-        databaseId = db.id
-    } catch {
-        databaseId = ''
-    }
-
-    await redis.set(`user:${userId}:notion_token`, accessToken)
-    await redis.set(`user:${userId}:notion_workspace`, data.workspace_name ?? '')
-    if (databaseId) await redis.set(`user:${userId}:notion_database_id`, databaseId)
+    await Promise.all([
+        redis.set(`user:${userId}:notion_token`, accessToken),
+        redis.set(`user:${userId}:notion_workspace`, data.workspace_name ?? ''),
+        // Store template page so createNotionDatabase knows where to put the new db
+        data.duplicated_template_id
+            ? redis.set(`user:${userId}:notion_template_page_id`, data.duplicated_template_id)
+            : Promise.resolve(),
+    ])
 
     redirect('/onboarding')
 }

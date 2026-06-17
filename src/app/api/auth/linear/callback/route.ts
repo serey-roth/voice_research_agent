@@ -1,6 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
 import { Redis } from '@upstash/redis'
-import { LinearClient } from '@linear/sdk'
 import { redirect } from 'next/navigation'
 
 const redis = Redis.fromEnv()
@@ -36,13 +35,6 @@ export async function GET(request: Request) {
     const data = await res.json()
     const accessToken = data.access_token as string
 
-    const linear = new LinearClient({ accessToken })
-    const { nodes: teams } = await linear.teams()
-
     await redis.set(`user:${userId}:linear_token`, accessToken)
-    if (teams.length > 0) {
-        await redis.set(`user:${userId}:linear_team_id`, teams[0].id)
-    }
-
     redirect('/onboarding')
 }
