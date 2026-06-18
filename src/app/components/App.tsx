@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { FolderOpen, Plug, BarChart2, Menu } from 'lucide-react'
+import { AppLogo } from './AppLogo'
 
 interface Props {
     header: React.ReactNode
@@ -33,6 +34,9 @@ export default function App({ header, children }: Props) {
                 `}
             >
                 <div className="px-5 h-14 flex items-center border-b border-neutral-100">
+                    <div className="mt-1">
+                        <AppLogo size={30} />
+                    </div>
                     <span className="text-[13px] font-semibold text-ink tracking-tight">
                         VoiceScope
                     </span>
