@@ -1,6 +1,8 @@
 import { AlertCircle } from 'lucide-react'
 import { Interview } from './Interview'
 import { getSession, getUserUsageSeconds, getProject } from '@/lib/db'
+import { AppLogo } from '@/app/components/AppLogo'
+import React from 'react'
 
 interface Session {
     projectId: string
@@ -15,6 +17,31 @@ interface Project {
     researchGoal: string
 }
 
+function InterviewLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <main className="min-h-screen flex flex-col bg-bg">
+            <header className="flex items-center justify-between px-8 py-2 border-b border-black/5">
+                <div className="flex items-center">
+                    <span className="mt-1">
+                        <AppLogo size={30} />
+                    </span>
+                    <span className="text-sm font-semibold tracking-tight">VoiceScope</span>
+                </div>
+            </header>
+
+            <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
+                {children}
+            </div>
+
+            <div className="border-t border-black/5" />
+
+            <footer className="px-8 py-2 flex items-center justify-between">
+                <span className="text-xs text-muted">© {new Date().getFullYear()} Voice Scope</span>
+            </footer>
+        </main>
+    )
+}
+
 export default async function InterviewPage({
     params,
 }: {
@@ -25,9 +52,9 @@ export default async function InterviewPage({
 
     if (!session) {
         return (
-            <main className="min-h-screen flex flex-col items-center justify-center px-6">
+            <InterviewLayout>
                 <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-                    <div className="w-8 h-8 rounded-full border border-neutral-200 flex items-center justify-center mb-1">
+                    <div className="w-8 h-8 rounded-full border border-neutral-300 flex items-center justify-center mb-1">
                         <AlertCircle size={14} className="text-muted" />
                     </div>
                     <p className="text-sm font-medium text-ink">Link not found</p>
@@ -36,7 +63,7 @@ export default async function InterviewPage({
                         it.
                     </p>
                 </div>
-            </main>
+            </InterviewLayout>
         )
     }
 
@@ -45,7 +72,7 @@ export default async function InterviewPage({
         const usedSeconds = await getUserUsageSeconds(session.creatorId)
         if (usedSeconds >= capSeconds) {
             return (
-                <main className="min-h-screen flex flex-col items-center justify-center px-6">
+                <InterviewLayout>
                     <div className="flex flex-col items-center gap-3 text-center max-w-xs">
                         <p className="text-sm font-medium text-ink">Session unavailable</p>
                         <p className="text-[13px] text-muted leading-relaxed">
@@ -53,7 +80,7 @@ export default async function InterviewPage({
                             researcher.
                         </p>
                     </div>
-                </main>
+                </InterviewLayout>
             )
         }
     }
@@ -62,7 +89,7 @@ export default async function InterviewPage({
         return (
             <main className="min-h-screen flex flex-col bg-bg">
                 <header className="px-6 py-5">
-                    <p className="text-[13px] font-medium text-muted tracking-wide">VoiceScope</p>
+                    <AppLogo size={30} />
                 </header>
                 <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
                     <div className="flex flex-col items-center gap-4 text-center max-w-sm">
@@ -81,33 +108,28 @@ export default async function InterviewPage({
     const project = await getProject<Project>(session.projectId)
     if (!project) {
         return (
-            <main className="min-h-screen flex flex-col items-center justify-center px-6">
+            <InterviewLayout>
                 <div className="flex flex-col items-center gap-3 text-center max-w-xs">
                     <p className="text-sm font-medium text-ink">Session unavailable</p>
                     <p className="text-[13px] text-muted leading-relaxed">
                         Please contact the researcher.
                     </p>
                 </div>
-            </main>
+            </InterviewLayout>
         )
     }
 
     return (
-        <main className="min-h-screen flex flex-col bg-bg">
-            <header className="px-6 py-5">
-                <p className="text-[13px] font-medium text-muted tracking-wide">VoiceScope</p>
-            </header>
-            <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
-                <Interview
-                    session={{
-                        productName: project.productName,
-                        productDescription: project.productDescription,
-                        researchGoal: project.researchGoal,
-                        participantEmail: session.participantEmail,
-                    }}
-                    sessionId={sessionId}
-                />
-            </div>
-        </main>
+        <InterviewLayout>
+            <Interview
+                session={{
+                    productName: project.productName,
+                    productDescription: project.productDescription,
+                    researchGoal: project.researchGoal,
+                    participantEmail: session.participantEmail,
+                }}
+                sessionId={sessionId}
+            />
+        </InterviewLayout>
     )
 }

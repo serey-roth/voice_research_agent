@@ -47,11 +47,12 @@ export function ProjectRow({
     const menuOpen = openMenuId === project.id
 
     return (
-        <div className="px-4 lg:px-8 py-4">
+        <div className="px-4 lg:px-8 py-4 hover:bg-surface transition-colors duration-100">
             <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-ink mb-0.5">{project.productName}</p>
-                    <p className="text-[13px] text-muted">{project.researchGoal}</p>
+                    <p className="text-[13px] font-semibold text-ink">{project.productName}</p>
+                    <p className="text-[13px] text-muted mt-0.5">{project.productDescription}</p>
+                    <p className="text-[12px] text-muted/60 mt-1 italic">{project.researchGoal}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 mt-0.5">
                     {project.issuesUrl && (

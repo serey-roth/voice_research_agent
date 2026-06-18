@@ -112,8 +112,8 @@ export async function getUserProjects<T extends { deletedAt?: string | null }>(
     if (!ids.length) return []
     const projects = await Promise.all(ids.map((id) => getProject<T>(id)))
     return projects
-        .map((p, i) => (p && !p.deletedAt ? { id: ids[i], ...p } : null))
-        .filter(Boolean) as Array<{ id: string } & T>
+        .map((p, i) => (p ? { id: ids[i], ...p } : null))
+        .filter((p): p is { id: string } & Awaited<T> => p !== null && !p.deletedAt)
 }
 
 export async function getUserProjectsWithSessions<
