@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import App from '@/app/components/App'
 import { getUserUsageSeconds, getUserProjectsWithSessions, getSessionDuration } from '@/lib/db'
+import { DateTime } from 'luxon'
 
 interface Session {
     participantEmail: string
@@ -32,16 +33,31 @@ export default async function UsagePage() {
 
     const completedSessions = allSessions
         .filter((s) => s.status === 'completed')
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-    const completedWithDuration = (
-        await Promise.all(
-            completedSessions.map(async (s) => {
-                const durationSeconds = await getSessionDuration(s.id)
-                return durationSeconds ? { ...s, durationSeconds } : null
-            })
+        .sort(
+            (a, b) =>
+                DateTime.fromISO(b.createdAt).toMillis() - DateTime.fromISO(a.createdAt).toMillis()
         )
-    ).filter(Boolean) as ({ id: string; durationSeconds: number; productName: string } & Session)[]
+
+    const completedWithDuration = await Promise.all(
+        completedSessions.map(async (s) => {
+            const durationSeconds = await getSessionDuration(s.id)
+            return { ...s, durationSeconds: durationSeconds ?? 0 }
+        })
+    )
+
+    const byProject = projectsWithSessions
+        .filter((p) => !p.deletedAt)
+        .map((p) => {
+            const sessions = completedWithDuration.filter((s) => s.projectId === p.id)
+            const totalSeconds = sessions.reduce((sum, s) => sum + s.durationSeconds, 0)
+            return {
+                id: p.id,
+                productName: p.productName,
+                sessionCount: sessions.length,
+                totalMinutes: Math.round(totalSeconds / 60),
+            }
+        })
+        .filter((p) => p.sessionCount > 0)
 
     const usedMinutes = Math.round(usedSeconds / 60)
     const capMinutes = Math.round(capSeconds / 60)
@@ -56,7 +72,6 @@ export default async function UsagePage() {
         <App header={header}>
             <div className="flex-1 overflow-y-auto px-4 lg:px-8 py-8">
                 <div className="max-w-[640px] mx-auto flex flex-col gap-8">
-                    {/* Over cap banner */}
                     {isOverCap && (
                         <div className="p-4 rounded-lg border border-red-200 bg-red-50">
                             <p className="text-sm font-medium text-red-800 mb-1">
@@ -75,7 +90,6 @@ export default async function UsagePage() {
                         </div>
                     )}
 
-                    {/* Usage summary */}
                     <section>
                         <h2 className="text-[11px] font-medium text-muted mb-4 uppercase tracking-wide">
                             Interview minutes
@@ -97,7 +111,6 @@ export default async function UsagePage() {
                                 </div>
                                 <p className="text-[13px] text-muted shrink-0">{usagePercent}%</p>
                             </div>
-                            {/* Progress bar */}
                             <div className="h-1 bg-neutral-100">
                                 <div
                                     className={`h-full transition-all ${isOverCap ? 'bg-red-500' : 'bg-primary'}`}
@@ -107,32 +120,28 @@ export default async function UsagePage() {
                         </div>
                     </section>
 
-                    {/* Per-session breakdown */}
-                    {completedWithDuration.length > 0 && (
+                    {byProject.length > 0 && (
                         <section>
                             <h2 className="text-[11px] font-medium text-muted mb-4 uppercase tracking-wide">
-                                Per session
+                                By project
                             </h2>
                             <div className="border border-neutral-200 rounded-lg overflow-hidden divide-y divide-neutral-100">
-                                {completedWithDuration.map((s) => (
+                                {byProject.map((p) => (
                                     <div
-                                        key={s.id}
+                                        key={p.id}
                                         className="px-5 py-3.5 flex items-center justify-between gap-4"
                                     >
                                         <div className="min-w-0">
                                             <p className="text-[13px] font-medium text-ink truncate">
-                                                {s.productName}
+                                                {p.productName}
                                             </p>
                                             <p className="text-[12px] text-muted mt-0.5">
-                                                {s.participantEmail} &middot;{' '}
-                                                {new Date(s.createdAt).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                })}
+                                                {p.sessionCount}{' '}
+                                                {p.sessionCount === 1 ? 'interview' : 'interviews'}
                                             </p>
                                         </div>
                                         <span className="text-[13px] text-muted shrink-0">
-                                            {Math.round(s.durationSeconds / 60)} min
+                                            {p.totalMinutes} min
                                         </span>
                                     </div>
                                 ))}
