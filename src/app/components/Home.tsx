@@ -175,10 +175,6 @@ export default function Home({ projects, isOverCap }: { projects: Project[]; isO
                                 onMenuToggle={setOpenMenuId}
                                 onView={() => openViewProject(project)}
                                 onEdit={() => openEditProject(project)}
-                                onDelete={() => {
-                                    setOpenMenuId(null)
-                                    setDeleteConfirmId(project.id)
-                                }}
                                 onRetry={() => router.refresh()}
                             />
                         ))}

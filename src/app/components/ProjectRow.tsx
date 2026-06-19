@@ -32,7 +32,6 @@ interface ProjectRowProps {
     onMenuToggle: (id: string | null) => void
     onView: () => void
     onEdit: () => void
-    onDelete: () => void
     onRetry: () => void
 }
 
@@ -42,7 +41,6 @@ export function ProjectRow({
     onMenuToggle,
     onView,
     onEdit,
-    onDelete,
     onRetry,
 }: ProjectRowProps) {
     const menuOpen = openMenuId === project.id
@@ -98,12 +96,6 @@ export function ProjectRow({
                                         className="text-left px-3 py-1.5 text-[13px] text-ink hover:bg-neutral-50 transition-colors disabled:text-muted disabled:cursor-not-allowed disabled:hover:bg-transparent"
                                     >
                                         Edit project
-                                    </button>
-                                    <button
-                                        onClick={onDelete}
-                                        className="text-left px-3 py-1.5 text-[13px] text-red-500 hover:bg-neutral-50 transition-colors"
-                                    >
-                                        Delete project
                                     </button>
                                 </div>
                             </>
