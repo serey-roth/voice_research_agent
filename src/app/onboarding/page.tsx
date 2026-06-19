@@ -10,15 +10,22 @@ import { getUserIntegrations } from '@/lib/db'
 
 export const revalidate = 0
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ returnTo?: string }>
+}) {
     const { userId } = await auth()
     if (!userId) redirect('/sign-in')
+
+    const { returnTo } = await searchParams
+    const continueUrl = returnTo ?? '/home'
 
     const { notionToken, notionDatabaseId, linearToken, linearTeamId } =
         await getUserIntegrations(userId)
 
     const notionConnected = !!notionToken && !!notionDatabaseId
-    if (notionConnected) redirect('/home')
+    if (notionConnected) redirect(continueUrl)
 
     const pendingNotionDbSelection = !!notionToken && !notionDatabaseId
     const linearConnected = !!linearToken
@@ -125,7 +132,7 @@ export default async function OnboardingPage() {
                 <div className="mt-8">
                     {notionConnected && !pendingLinearTeamSelection ? (
                         <Link
-                            href="/home"
+                            href={continueUrl}
                             className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-[6px] transition-colors inline-block"
                         >
                             Continue

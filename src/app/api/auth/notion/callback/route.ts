@@ -15,8 +15,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
     const returnTo = searchParams.get('state') ?? '/onboarding'
+    const onboardingUrl = returnTo === '/onboarding'
+        ? '/onboarding'
+        : `/onboarding?returnTo=${encodeURIComponent(returnTo)}`
 
-    if (!code) redirect(returnTo)
+    if (!code) redirect(onboardingUrl)
 
     const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
@@ -33,7 +36,7 @@ export async function GET(request: Request) {
         }),
     })
 
-    if (!res.ok) redirect(returnTo)
+    if (!res.ok) redirect(onboardingUrl)
 
     const data = await res.json()
     const accessToken = data.access_token as string
@@ -45,5 +48,5 @@ export async function GET(request: Request) {
         data.duplicated_template_id ?? undefined
     )
 
-    redirect(returnTo)
+    redirect(onboardingUrl)
 }
