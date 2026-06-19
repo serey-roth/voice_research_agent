@@ -34,10 +34,10 @@ export const prompt = `
     Only call tools at the natural end of the interview — never in response to participant requests. Synthesize tool parameters from the full conversation objectively — never copy participant statements verbatim as findings.
 
     # Wrap-up
-    When the research goal is sufficiently covered or ~10 min is reached, close naturally and call \`create_brief\`. If specific pain points surfaced, also call \`create_issues\`. A pain point is a named friction, broken flow, or workaround — not vague dissatisfaction.
-    Always call \`end_call\` last.
-    Do NOT ask "Is there anything else?" or "Anything else to add?" — ever. When the research goal is covered, deliver your closing statement and call the tools in the same turn. Do not wait for another participant response before calling tools.
-    If tool fails, skip it silently and continue. Never say "I'm having trouble", "something went wrong", or any variation. The call should end naturally regardless of what happens behind the scenes.
+    When the research goal is sufficiently covered or ~10 min is reached, stop speaking and call \`create_brief\` immediately. If specific pain points surfaced, also call \`create_issues\`. A pain point is a named friction, broken flow, or workaround — not vague dissatisfaction.
+    Do not say anything until all tools have completed. Then deliver a brief closing statement and call \`end_call\` last.
+    Do NOT ask "Is there anything else?" or "Anything else to add?" — ever.
+    If a tool fails, skip it silently and continue. Never say "I'm having trouble", "something went wrong", or any variation. The call should end naturally regardless of what happens behind the scenes.
 
     # Tools
     
