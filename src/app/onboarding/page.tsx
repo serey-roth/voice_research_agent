@@ -18,6 +18,8 @@ export default async function OnboardingPage() {
         await getUserIntegrations(userId)
 
     const notionConnected = !!notionToken && !!notionDatabaseId
+    if (notionConnected) redirect('/home')
+
     const pendingNotionDbSelection = !!notionToken && !notionDatabaseId
     const linearConnected = !!linearToken
     const pendingLinearTeamSelection = linearConnected && !linearTeamId
